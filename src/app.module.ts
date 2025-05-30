@@ -39,6 +39,7 @@ import { Item } from './items/item.entity';
      CartModule,
     UsersModule,
     ItemsModule,
+    AuthModule
     
     // other modules here
   ],
