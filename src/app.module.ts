@@ -2,15 +2,6 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-
-// @Module({
-//   imports: [AuthModule],
-//   controllers: [AppController],
-//   providers: [AppService],
-// })
-// export class AppModule {}
-
-
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { User } from './users/users.entity';
@@ -19,6 +10,8 @@ import { ItemsModule } from './items/items.module';
 import { CartModule } from './cart/cart.modue';
 import { Cart } from './cart/cart.entity';
 import { Item } from './items/item.entity';
+import { Order } from './order/orders.entity';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -29,7 +22,7 @@ import { Item } from './items/item.entity';
       username: 'root',
       password: 'root',
       database: 'myapp',
-      entities: [User,Cart,Item],
+      entities: [User,Cart,Item,Order],
       // synchronize: true,// set false in production
     }),
      JwtModule.register({
@@ -39,8 +32,8 @@ import { Item } from './items/item.entity';
      CartModule,
     UsersModule,
     ItemsModule,
-    AuthModule
-    
+    AuthModule,
+    OrderModule    
     // other modules here
   ],
   controllers: [AppController],

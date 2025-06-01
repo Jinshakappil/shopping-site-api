@@ -1,11 +1,7 @@
-// src/cart/cart.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-// import { CreateCartDto } from './dto/create-cart.dto';
-// import { CreateCartDto } from './create-cart.dto';
-import { Repository } from 'typeorm';
+import {  Repository } from 'typeorm';
 import { Cart } from './cart.entity';
-// import { User } from 'src/users/users.entity';
 import { Item } from 'src/items/item.entity';
 @Injectable()
 export class CartService {
@@ -21,39 +17,49 @@ export class CartService {
   ) {}
   async getAllItems(userId: any): Promise<Cart[]> {
     return this.cartRepository.find({
-      where: { userId: userId },
+      where: { userId: userId, paid: 'N' },
     });
   }
+  /**
+   * 
+   * @param query 
+   * @returns 
+   */
 
-  //   async addToCart(dto:any): Promise<void> {
-  //     const user :any= await this.userRepository.findOne({ where: { id: dto.userId } });
-  //     const product = await this.productRepository.findOne({
-  //       where: { id: dto.productId },
-  //     });
+  async OrderList(query: any): Promise<[]> {
+    try {
+      var cart = await this.cartRepository.find({
+        where: {
+          userId: query.userId,
+          paid: 'Y',
+        },
+        relations: ['item'],
+        // 'item' must match the relation name in your Cart entity
+      });
+     
+      var formatted :any= cart.map((c) => ({
+        id: c.id,
+        userId: c.userId,
+        quantity: c.quantity,
+        paid: c.paid,
+        productId: c.item?.id,
+        itemName: c.item?.name,
+        price: c.price,
+        itemImage:c.item?.image,
+      }));
 
-  //     if (!user || !product) {
-  //       throw new Error('User or product not found');
-  //     }
+      return formatted;
+    } catch (err) {
+      console.log('failed');
+    }
+  }
+ 
 
-  //     const existingCartItem = await this.cartRepository.findOne({
-  //         where:{id:dto.id}
-
-  //     //   where: { user: { id: dto.userId }, product: { id: dto.productId } },
-  //     });
-
-  //     if (existingCartItem) {
-  //       existingCartItem.quantity += 1;
-  //       await this.cartRepository.save(existingCartItem);
-  //     } else {
-  //       const cartItem = this.cartRepository.create({
-  //         user,
-  //         // product,
-  //         quantity: 1,
-  //       });
-  //       await this.cartRepository.save(cartItem);
-  //     }
-  //   }
-
+  /**
+   * 
+   * @param dto 
+   * @returns 
+   */
   async addToCart(dto: any): Promise<void> {
     try {
       let existingCartItem;
@@ -67,6 +73,7 @@ export class CartService {
       } else {
         const cartItem = this.cartRepository.create({
           ...dto,
+          paid: 'N',
           // product,
           // quantity: dto,
         });
@@ -82,7 +89,6 @@ export class CartService {
   async updateQuantity(id, payload: any): Promise<Cart> {
     try {
       const item = await this.cartRepository.findOne({ where: { id: id } });
-            console.log('prrrrrr',  payload.productId);
 
       const product = await this.Item.findOne({
         where: { id: payload.productId },
@@ -93,7 +99,7 @@ export class CartService {
       item.price = product.price * item.quantity;
       return this.cartRepository.save(item);
     } catch (err) {
-      console.log('errrrrrrrrrrr', err);
+      console.log('error', err);
       return err;
     }
   }
@@ -106,5 +112,25 @@ export class CartService {
     }
 
     return { message: 'Cart item removed successfully' };
+  }
+
+  async findCartItem(params: any) {
+    const existingCartItem = await this.cartRepository.findOne({
+      where: { orderId: params.id },
+    });
+    existingCartItem.paid = 'Y';
+    await this.cartRepository.save(existingCartItem);
+  }
+
+  async orderPlaced(params: any) {
+    try {
+      const existingCartItem = await this.cartRepository.findOne({
+        where: { userId: params.userId, productId: params.productId },
+      });
+      existingCartItem.orderId = params.orderId;
+      await this.cartRepository.save(existingCartItem);
+    } catch (err) {
+      console.log('errror', err);
+    }
   }
 }

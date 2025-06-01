@@ -12,6 +12,7 @@ export class Item {
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
 
-//   @Column({ length: 255, nullable: true })
-//   image?: string;
+  @Column({ length: 255, nullable: true })
+  image?: string;
+  carts: any;
 }

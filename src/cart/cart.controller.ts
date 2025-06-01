@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { JwtAuthGuard } from 'src/auth/jwt.auth.gurd';
+import { query } from 'express';
 // import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // Adjust path
 
 @Controller('cart')
@@ -23,7 +24,11 @@ export class CartController {
   async getUserCart(@Query('userId') userId: number) {
     return this.cartService.getAllItems(userId);
   }
-
+@UseGuards(JwtAuthGuard)
+  @Get('order-list')
+  async getOrderlist(@Query('') query: any) {
+    return this.cartService.OrderList(query);
+  }
   @UseGuards(JwtAuthGuard)
   @Post('create-cart')
   async saveCart(@Body() createCartDto: any) {
